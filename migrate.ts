@@ -67,6 +67,7 @@ export async function migrateToPhrase(projectId: string, phraseToken?: string) {
 
   // @ts-ignore
   const keys = Object.keys(valuesByLocale['zh-CN'])
+  console.log(chalk.yellow(`Total keys to migrate: ${keys.length}`))
 
   for (const key of keys) {
     console.log(`🔑 Processing key: ${key}`)
