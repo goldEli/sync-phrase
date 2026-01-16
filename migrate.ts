@@ -1,5 +1,6 @@
 import axios from 'axios'
 import dotenv from 'dotenv'
+import chalk from 'chalk'
 import { valuesByLocale } from './valuesByLocale'
 
 dotenv.config()
@@ -72,7 +73,7 @@ export async function migrateToPhrase(projectId: string, phraseToken?: string) {
     const keyId = await createKeyIfNotExists(key)
 
     if (!keyId) {
-      console.log(`⚠️  Key "${key}" already exists, skip creating`)
+      console.log(chalk.red(`⚠️  Key "${key}" already exists, skip creating`))
       continue
     }
 
