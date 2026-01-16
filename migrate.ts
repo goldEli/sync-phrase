@@ -1,5 +1,6 @@
 import axios from 'axios'
 import dotenv from 'dotenv'
+import { valuesByLocale } from './valuesByLocale'
 
 dotenv.config()
 
@@ -14,20 +15,6 @@ const headers = {
 }
 console.log(headers)
 
-const valuesByLocale = {
-  'en': {
-    'newFooter.policies': 'Policies',
-    'newFooter.privacy': 'Privacy Policy',
-  },
-  'zh-CN': {
-    'newFooter.policies': '政策条款',
-    'newFooter.privacy': '隐私政策',
-  },
-  'ja': {
-    'newFooter.policies': 'ポリシー',
-    'newFooter.privacy': 'プライバシーポリシー',
-  },
-}
 
 async function getLocales() {
   const res = await axios.get(
@@ -80,7 +67,7 @@ async function main() {
     localeIdMap[l.code] = l.id
   })
 
-  const keys = Object.keys(valuesByLocale['en'])
+  const keys = Object.keys(valuesByLocale['zh-CN'])
 
   for (const key of keys) {
     console.log(`🔑 Processing key: ${key}`)
@@ -105,4 +92,4 @@ async function main() {
   console.log('🎉 Done')
 }
 
-// main().catch(console.error)
+main().catch(console.error)
