@@ -1,5 +1,5 @@
 
-function get_locale_file_name(name: string){
+export function get_locale_file_name(name: string){
     if(['zh', 'zh-cn', 'zh_cn', 'zhcn'].includes(name)){
         return {
             "code": "zh-CN",

@@ -1,6 +1,9 @@
 import { execSync } from 'child_process';
 import { readFileSync, writeFileSync, existsSync, readdirSync } from 'fs';
 import { join } from 'path';
+import { get_locale_file_name } from './utils';
+
+
 
 const SOURCE_REPO = '/Users/eli/Documents/weex/projects/web-language';
 const TARGET_FILE = './valuesByLocale.ts';
@@ -39,7 +42,13 @@ function collectTranslations(sourcePath: string, allowedKeys: string[]): Record<
 
   for (const file of files) {
     const sourceFilePath = join(sourcePath, file);
-    const locale = file.replace('.json', '');
+    const fileName = file.replace('.json', '');
+    const locale = get_locale_file_name(fileName.toLowerCase())?.code;
+    if (!locale) {
+      console.error(`No locale found for file: ${file}`);
+      continue;
+    }
+    
 
     try {
       const content = readFileSync(sourceFilePath, 'utf-8');
