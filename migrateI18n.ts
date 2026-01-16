@@ -1,4 +1,4 @@
-import inquirer from 'inquirer';
+import { select } from '@inquirer/prompts';
 import { execSync } from 'child_process';
 import dotenv from 'dotenv';
 import { migrateToPhrase } from './migrate';
@@ -16,18 +16,14 @@ async function main(): Promise<void> {
 
   // Step 1: Interactive selection between Trade and Pages
   console.log('Step 1: Select project type');
-  const { projectType } = await inquirer.prompt<{ projectType: 'trade' | 'pages' }>([
-    {
-      type: 'list',
-      name: 'projectType',
-      message: 'Select project type:',
-      choices: [
-        { name: 'Trade', value: 'trade' },
-        { name: 'Pages', value: 'pages' }
-      ],
-      default: 'pages'
-    }
-  ]);
+  const projectType = await select({
+    message: 'Select project type:',
+    choices: [
+      { name: 'Trade', value: 'trade' },
+      { name: 'Pages', value: 'pages' }
+    ],
+    default: 'pages'
+  }) as 'trade' | 'pages';
 
   console.log(`\n📋 Selected: ${projectType === 'trade' ? 'Trade' : 'Pages'}\n`);
 
