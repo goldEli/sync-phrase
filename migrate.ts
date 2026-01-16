@@ -13,7 +13,6 @@ const headers = {
   Authorization: `token ${PHRASE_TOKEN}`,
   'Content-Type': 'application/json',
 }
-console.log(headers)
 
 
 async function getLocales() {
