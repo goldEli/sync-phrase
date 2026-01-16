@@ -1,4 +1,4 @@
-import { select } from '@inquirer/prompts';
+import { select, confirm } from '@inquirer/prompts';
 import { execSync } from 'child_process';
 import { readFileSync, existsSync } from 'fs';
 import dotenv from 'dotenv';
@@ -38,8 +38,22 @@ async function main(): Promise<void> {
     process.exit(1);
   }
 
-  // Step 3: Check if keys already exist in source JSON
-  console.log('Step 3: Checking for existing keys in source JSON...');
+  // Step 3: Confirm proceeding with migration
+  console.log('Step 3: Confirm migration');
+  const isConfirmed = await confirm({
+    message: 'getWebKeyValue.ts has completed successfully. Do you want to proceed with the migration?',
+    default: true
+  });
+
+  if (!isConfirmed) {
+    console.log('\n🚫 Migration cancelled by user');
+    process.exit(0);
+  }
+
+  console.log('\n✅ Proceeding with migration...\n');
+
+  // Step 4: Check if keys already exist in source JSON
+  console.log('Step 4: Checking for existing keys in source JSON...');
   try {
     // Determine source JSON path based on project type
     let sourceJsonPath: string;
@@ -98,8 +112,8 @@ async function main(): Promise<void> {
     process.exit(1);
   }
 
-  // Step 4: Call migrateToPhrase with the appropriate project ID
-  console.log('Step 4: Migrating translations to Phrase...');
+  // Step 5: Call migrateToPhrase with the appropriate project ID
+  console.log('Step 5: Migrating translations to Phrase...');
   try {
     let projectId: string;
 
