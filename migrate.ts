@@ -64,6 +64,7 @@ export async function migrateToPhrase(projectId: string, phraseToken?: string) {
     localeIdMap[l.code] = l.id
   })
 
+  // @ts-ignore
   const keys = Object.keys(valuesByLocale['zh-CN'])
 
   for (const key of keys) {
