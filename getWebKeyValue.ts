@@ -1,9 +1,9 @@
 import { execSync } from 'child_process';
-import { readFileSync, writeFileSync, mkdirSync, existsSync, readdirSync } from 'fs';
+import { readFileSync, writeFileSync, existsSync, readdirSync } from 'fs';
 import { join } from 'path';
 
 const SOURCE_REPO = '/Users/eli/Documents/weex/projects/web-language';
-const TARGET_DIR = './pagesJSON';
+const TARGET_FILE = './valuesByLocale.ts';
 const KEY_FILE = './key.txt';
 
 function updateGitRepo(repoPath: string): void {
@@ -24,25 +24,22 @@ function getAllowedKeys(keyFilePath: string): string[] {
     .filter(key => key.length > 0);
 }
 
-function processJsonFiles(sourcePath: string, targetPath: string, allowedKeys: string[]): void {
-  if (!existsSync(targetPath)) {
-    console.log(`Creating target directory: ${targetPath}`);
-    mkdirSync(targetPath, { recursive: true });
-  }
+function collectTranslations(sourcePath: string, allowedKeys: string[]): Record<string, Record<string, string>> {
+  const translations: Record<string, Record<string, string>> = {};
 
   const files = readdirSync(sourcePath)
     .filter(file => file.endsWith('.json'));
 
   if (files.length === 0) {
     console.log(`No JSON files found in ${sourcePath}`);
-    return;
+    return translations;
   }
 
   console.log(`Found ${files.length} JSON files. Processing...`);
 
   for (const file of files) {
     const sourceFilePath = join(sourcePath, file);
-    const targetFilePath = join(targetPath, file);
+    const locale = file.replace('.json', '');
 
     try {
       const content = readFileSync(sourceFilePath, 'utf-8');
@@ -53,19 +50,31 @@ function processJsonFiles(sourcePath: string, targetPath: string, allowedKeys: s
           .filter(([key]) => allowedKeys.includes(key))
       );
 
-      writeFileSync(targetFilePath, JSON.stringify(filteredData, null, 2), 'utf-8');
+      if (Object.keys(filteredData).length > 0) {
+        translations[locale] = filteredData as Record<string, string>;
+      }
+
       console.log(`✓ Processed: ${file}`);
     } catch (error) {
       console.error(`✗ Error processing ${file}:`, error instanceof Error ? error.message : String(error));
     }
   }
+
+  return translations;
+}
+
+function generateTypeScriptFile(translations: Record<string, Record<string, string>>, targetFilePath: string): void {
+  const content = `export const valuesByLocale = ${JSON.stringify(translations, null, 2)}`;
+  writeFileSync(targetFilePath, content, 'utf-8');
+  console.log(`\nGenerated TypeScript file: ${targetFilePath}`);
 }
 
 function main(): void {
   try {
     updateGitRepo(SOURCE_REPO);
     const allowedKeys = getAllowedKeys(KEY_FILE);
-    processJsonFiles(SOURCE_REPO, TARGET_DIR, allowedKeys);
+    const translations = collectTranslations(SOURCE_REPO, allowedKeys);
+    generateTypeScriptFile(translations, TARGET_FILE);
     console.log('\nAll files processed successfully!');
   } catch (error) {
     console.error('\nError:', error instanceof Error ? error.message : String(error));
