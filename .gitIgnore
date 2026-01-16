@@ -1,0 +1,5 @@
+/node_modules
+/pagesJSON
+.env
+key.txt
+valuesByLocale.ts
