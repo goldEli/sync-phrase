@@ -1,14 +1,13 @@
 import axios from 'axios'
 import dotenv from 'dotenv'
 import chalk from 'chalk'
-import { valuesByLocale } from './valuesByLocale'
 
 dotenv.config()
 
 const API_BASE = 'https://api.phrase.com/v2'
 
-export async function migrateToPhrase(projectId: string, phraseToken?: string) {
-  const PHRASE_TOKEN = phraseToken || process.env.PHRASE_TOKEN!
+export async function migrateToPhrase(projectId: string, valuesByLocale: Record<string, Record<string, string>>) {
+  const PHRASE_TOKEN = process.env.PHRASE_TOKEN!
   
   const headers = {
     Authorization: `token ${PHRASE_TOKEN}`,

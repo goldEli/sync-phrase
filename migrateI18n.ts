@@ -4,6 +4,7 @@ import { readFileSync, existsSync, writeFileSync } from 'fs';
 import { dirname } from 'path';
 import dotenv from 'dotenv';
 import { migrateToPhrase } from './migrate';
+import { getWebKeyValue } from './getWebKeyValue';
 
 // Load environment variables from .env file
 dotenv.config();
@@ -13,7 +14,7 @@ interface ProjectType {
   value: 'trade' | 'pages';
 }
 
-async function main(): Promise<void> {
+async function main() {
   console.log('🚀 Starting i18n Migration Process\n');
 
   // Step 1: Interactive selection between Trade and Pages
@@ -31,13 +32,30 @@ async function main(): Promise<void> {
 
   // Step 2: Run getWebKeyValue.ts
   console.log('Step 2: Running getWebKeyValue.ts...');
-  try {
-    execSync('npx ts-node getWebKeyValue.ts', { stdio: 'inherit' });
-    console.log('\n✅ getWebKeyValue.ts completed successfully!\n');
-  } catch (error) {
-    console.error('\n❌ Error running getWebKeyValue.ts:', error instanceof Error ? error.message : String(error));
-    process.exit(1);
+  const { webKeyValue } = getWebKeyValue() ?? {}
+
+
+
+  // console.log(webKeyValue)
+  if (!webKeyValue) {
+    throw new Error('getWebKeyValue.ts failed to return webKeyValue');
   }
+
+
+  // return Promise.resolve(void 0)
+
+  // try {
+  //   // execSync('npx ts-node getWebKeyValue.ts', { stdio: 'inherit' });
+
+  //   const { webKeyValue } = getWebKeyValue() ?? {}
+  //   // if (!translations) {
+  //   //   throw new Error('getWebKeyValue.ts failed to return translations');
+  //   // }
+  //   console.log('\n✅ getWebKeyValue.ts completed successfully!\n');
+  // } catch (error) {
+  //   console.error('\n❌ Error running getWebKeyValue.ts:', error instanceof Error ? error.message : String(error));
+  //   process.exit(1);
+  // }
 
   // Step 3: Confirm proceeding with migration
   console.log('Step 3: Confirm migration');
@@ -163,7 +181,7 @@ async function main(): Promise<void> {
     console.log(`\n📋 Using project ID: ${projectId}`);
     console.log('📋 Migrating translations...\n');
 
-    await migrateToPhrase(projectId);
+    await migrateToPhrase(projectId, webKeyValue);
 
     console.log('\n🎉 All steps completed successfully!');
   } catch (error) {
