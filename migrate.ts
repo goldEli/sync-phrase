@@ -6,7 +6,7 @@ dotenv.config()
 
 const API_BASE = 'https://api.phrase.com/v2'
 
-export async function migrateToPhrase(projectId: string, valuesByLocale: Record<string, Record<string, string>>) {
+export async function migrateToPhrase(projectId: string, valuesByLocale: Record<string, Record<string, string>>, existingKeys: Set<string>) {
   const PHRASE_TOKEN = process.env.PHRASE_TOKEN!
   
   const headers = {
@@ -69,6 +69,12 @@ export async function migrateToPhrase(projectId: string, valuesByLocale: Record<
   console.log(chalk.yellow(`Total keys to migrate: ${keys.length}`))
 
   for (const key of keys) {
+
+    if (existingKeys.has(key)) {
+      console.log(chalk.red(`⚠️  Key "${key}" already exists in source JSON, skip creating`))
+      continue
+    }
+
     console.log(`🔑 Processing key: ${key}`)
     const keyId = await createKeyIfNotExists(key)
 
