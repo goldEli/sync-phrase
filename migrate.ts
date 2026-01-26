@@ -75,7 +75,9 @@ export async function migrateToPhrase(projectId: string, valuesByLocale: Record<
       continue
     }
 
-    console.log(`🔑 Processing key: ${key}`)
+    const progress = chalk.yellow(`(${keys.indexOf(key) + 1}/${keys.length})`)
+
+    console.log(`🔑 Processing key: ${key} ${progress}`)
     const keyId = await createKeyIfNotExists(key)
 
     if (!keyId) {
@@ -91,6 +93,7 @@ export async function migrateToPhrase(projectId: string, valuesByLocale: Record<
 
       await setTranslation(keyId, localeId, str)
       console.log(`  ✅ ${locale}`)
+      // console process status
     }
   }
 

@@ -122,7 +122,7 @@ async function main() {
     // Collect all unique keys from valuesByLocale
     const keysToMigrate = new Map<string, string>();
     Object.entries(webKeyValue).forEach(([locale, localeValues]) => {
-      // @ts-ignore
+      if (locale !== 'zh-CN') return
       Object.entries(localeValues).forEach(([key, value]) => {
         keysToMigrate.set(key, value);
       });
