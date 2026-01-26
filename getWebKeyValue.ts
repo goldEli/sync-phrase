@@ -56,7 +56,9 @@ function collectTranslations(
       const data = JSON.parse(content);
 
       const filteredData = Object.fromEntries(
-        Object.entries(data).filter(([key]) => allowedKeys.includes(key)),
+        Object.entries(data)
+          .filter(([key]) => allowedKeys.includes(key))
+          .sort(([aKey], [bKey]) => allowedKeys.indexOf(aKey) - allowedKeys.indexOf(bKey)),
       );
 
       if (Object.keys(filteredData).length > 0) {
