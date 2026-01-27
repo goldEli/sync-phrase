@@ -6,19 +6,81 @@ dotenv.config();
 
 const API_BASE = "https://api.phrase.com/v2";
 
-class Executor {
-  executeList: Promise<void>[] = [];
+// 速率限制执行器：每5分钟最多1000个请求，最多4个并发
+class RateLimitedExecutor {
+  private maxConcurrent: number = 4;
+  private maxRequestsPerWindow: number = 1000;
+  private windowSizeMs: number = 5 * 60 * 1000; // 5分钟
+  private requestQueue: Array<() => Promise<void>> = [];
+  private activeCount: number = 0;
+  private requestTimes: number[] = [];
+  private processing: boolean = false;
 
-  add(promise: Promise<void>) {
-    this.executeList.push(promise);
+  async execute<T>(fn: () => Promise<T>): Promise<T> {
+    return new Promise((resolve, reject) => {
+      this.requestQueue.push(async () => {
+        try {
+          const result = await fn();
+          resolve(result);
+        } catch (error) {
+          reject(error);
+        }
+      });
+      this.processQueue();
+    });
   }
 
-  execute() {
-    return Promise.all(this.executeList);
+  private async processQueue() {
+    if (this.processing) return;
+    this.processing = true;
+
+    while (this.requestQueue.length > 0) {
+      // 等待并发槽位
+      while (this.activeCount >= this.maxConcurrent || !this.canMakeRequest()) {
+        await this.waitForSlot();
+      }
+
+      const task = this.requestQueue.shift()!;
+      this.activeCount++;
+      this.recordRequestTime();
+
+      task().finally(() => {
+        this.activeCount--;
+      });
+    }
+
+    this.processing = false;
+  }
+
+  private canMakeRequest(): boolean {
+    const now = Date.now();
+    const windowStart = now - this.windowSizeMs;
+    const requestsInWindow = this.requestTimes.filter(
+      (t) => t > windowStart,
+    ).length;
+    return requestsInWindow < this.maxRequestsPerWindow;
+  }
+
+  private async waitForSlot() {
+    await new Promise((resolve) => setTimeout(resolve, 200));
+  }
+
+  private recordRequestTime() {
+    const now = Date.now();
+    this.requestTimes.push(now);
+    // 清理过期的请求记录
+    const windowStart = now - this.windowSizeMs;
+    this.requestTimes = this.requestTimes.filter((t) => t > windowStart);
+  }
+
+  async waitForAll() {
+    while (this.requestQueue.length > 0 || this.activeCount > 0) {
+      await new Promise((resolve) => setTimeout(resolve, 100));
+    }
   }
 }
 
-const executor = new Executor();
+const executor = new RateLimitedExecutor();
 
 export async function migrateToPhrase(
   projectId: string,
@@ -118,13 +180,12 @@ export async function migrateToPhrase(
 
       const str = (values as any)[key];
 
-      executor.add(
-        setTranslation(keyId, localeId, str).then(() => {
-          console.log(`  ✅ ${locale}`);
-        }),
-      );
+      executor.execute(async () => {
+        await setTranslation(keyId, localeId, str);
+        console.log(`  ✅ ${locale}`);
+      });
     }
-    await executor.execute();
+    await executor.waitForAll();
   }
 
   console.log("🎉 Done");
