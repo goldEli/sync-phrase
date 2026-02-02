@@ -15,6 +15,7 @@ class RateLimitedExecutor {
   private activeCount: number = 0;
   private requestTimes: number[] = [];
   private processing: boolean = false;
+  private startTime: number = Date.now();
 
   async execute<T>(fn: () => Promise<T>): Promise<T> {
     return new Promise((resolve, reject) => {
@@ -54,11 +55,23 @@ class RateLimitedExecutor {
 
   private canMakeRequest(): boolean {
     const now = Date.now();
-    const windowStart = now - this.windowSizeMs;
-    const requestsInWindow = this.requestTimes.filter(
-      (t) => t > windowStart,
-    ).length;
-    return requestsInWindow < this.maxRequestsPerWindow;
+    // 执行时间
+    const executePeriod = now - this.startTime;
+    // 是否在允许的执行时间内
+    const isWithinWindow = executePeriod <= this.windowSizeMs;
+
+    // 是否超过最大请求数
+    const isOverLimit = this.requestTimes.length >= this.maxRequestsPerWindow;
+
+    const ret = isWithinWindow && !isOverLimit;
+
+    if (!ret) {
+      console.log(
+        `⚠️ 速率限制：当前窗口内已发送 ${this.requestTimes.length} 个请求，最大限制 ${this.maxRequestsPerWindow}`,
+      );
+    }
+
+    return ret;
   }
 
   private async waitForSlot() {
@@ -69,8 +82,8 @@ class RateLimitedExecutor {
     const now = Date.now();
     this.requestTimes.push(now);
     // 清理过期的请求记录
-    const windowStart = now - this.windowSizeMs;
-    this.requestTimes = this.requestTimes.filter((t) => t > windowStart);
+    // const windowStart = now - this.windowSizeMs;
+    // this.requestTimes = this.requestTimes.filter((t) => t > windowStart);
   }
 
   async waitForAll() {

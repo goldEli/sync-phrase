@@ -5,6 +5,7 @@ import { dirname } from 'path';
 import dotenv from 'dotenv';
 import { migrateToPhrase } from './migrate';
 import { getWebKeyValue } from './getWebKeyValue';
+import chalk from 'chalk';
 
 // Load environment variables from .env file
 dotenv.config();
@@ -37,11 +38,15 @@ async function main() {
 
 
 
+
   // console.log(webKeyValue)
   if (!webKeyValue) {
     throw new Error('getWebKeyValue.ts failed to return webKeyValue');
   }
 
+
+  // show 待处理数量
+  console.log(chalk.yellow(`待处理数量: ${Object.keys(webKeyValue["zh-CN"]).length}`))
 
   // return Promise.resolve(void 0)
 

@@ -2,6 +2,7 @@ import { execSync } from "child_process";
 import { readFileSync, writeFileSync, existsSync, readdirSync } from "fs";
 import { join } from "path";
 import { get_locale_file_name } from "./utils";
+import chalk from "chalk";
 
 const SOURCE_REPO = "/Users/eli/Documents/weex/projects/web-language";
 const TARGET_FILE = "./valuesByLocale.ts";
@@ -92,6 +93,15 @@ export function getWebKeyValue() {
     const allowedKeys = getAllowedKeys(KEY_FILE);
     const translations = collectTranslations(SOURCE_REPO, allowedKeys);
     generateTypeScriptFile(translations, TARGET_FILE);
+
+    // 检查缺失的 key
+    const zhCNKeys = Object.keys(translations["zh-CN"]);
+    const missingKeys = allowedKeys.filter((key) => !zhCNKeys.includes(key));
+    if (missingKeys.length > 0) {
+      console.log(chalk.red(`缺失的 key: ${missingKeys.join(", ")}`));
+      throw new Error(`缺失${missingKeys.length}个key`);
+    }
+
     console.log("\nAll files processed successfully!");
     return {
       webKeyValue: translations,
