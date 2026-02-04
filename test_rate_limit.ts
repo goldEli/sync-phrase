@@ -1,4 +1,4 @@
-import { RateLimitedExecutor } from "./migrate";
+import { RateLimitedExecutor } from "./rateLimiter";
 
 async function testRateLimit() {
   console.log("Starting Rate Limit Test...");
