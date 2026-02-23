@@ -5,8 +5,8 @@ dotenv.config();
 
 export class RateLimitedExecutor {
   private maxConcurrent: number = 4;
-  private maxRequestsPerWindow: number = 1000;
-  private windowSizeMs: number = 5 * 60 * 1000; // 5分钟
+  private maxRequestsPerWindow: number = 1100;
+  private windowSizeMs: number = 6 * 60 * 1000; // 5分钟
   private requestQueue: Array<() => Promise<void>> = [];
   private activeCount: number = 0;
   private requestTimes: number[] = [];

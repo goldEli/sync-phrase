@@ -92,6 +92,7 @@ export function getWebKeyValue() {
     updateGitRepo(SOURCE_REPO);
     const allowedKeys = getAllowedKeys(KEY_FILE);
     const translations = collectTranslations(SOURCE_REPO, allowedKeys);
+    console.log(SOURCE_REPO, allowedKeys);
     generateTypeScriptFile(translations, TARGET_FILE);
 
     // 检查缺失的 key
